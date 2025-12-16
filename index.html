@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Hungry Island - Escape Room</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        body {
+            background: #000;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* Background Image */
+        .bg-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.4;
+            z-index: 0;
+        }
+
+        /* Blood Effects */
+        .blood-drip {
+            position: fixed;
+            width: 3px;
+            background: linear-gradient(180deg, rgba(139, 0, 0, 0.9) 0%, rgba(139, 0, 0, 0) 100%);
+            animation: drip 3s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes drip {
+            0% { height: 0; top: 0; }
+            50% { height: 200px; }
+            100% { height: 200px; top: 100%; }
+        }
+
+        /* Skull Falling */
+        .skull {
+            position: fixed;
+            font-size: 40px;
+            animation: fall linear infinite;
+            z-index: 1;
+            opacity: 0.6;
+        }
+
+        @keyframes fall {
+            0% { top: -50px; transform: rotate(0deg); }
+            100% { top: 110%; transform: rotate(360deg); }
+        }
+
+        /* Evil Entity */
+        .evil-entity {
+            position: fixed;
+            font-size: 50px;
+            animation: float 10s ease-in-out infinite;
+            z-index: 1;
+            opacity: 0.5;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(100px, -50px) rotate(10deg); }
+            50% { transform: translate(200px, 50px) rotate(-10deg); }
+            75% { transform: translate(100px, 100px) rotate(5deg); }
+        }
+
+        /* Container */
+        .container {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Intro Screen */
+        .intro-screen {
+            text-align: center;
+            max-width: 800px;
+            background: rgba(20, 0, 0, 0.95);
+            padding: 50px;
+            border: 5px solid #8b0000;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(139, 0, 0, 0.8), inset 0 0 30px rgba(139, 0, 0, 0.3);
+        }
+
+        .intro-screen img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 30px;
+            border: 3px solid #8b0000;
+            border-radius: 10px;
+        }
+
+        .intro-screen h1 {
+            font-size: 60px;
+            color: #ff0000;
+            text-shadow: 0 0 20px #ff0000, 0 0 40px #8b0000;
+            margin-bottom: 30px;
+            letter-spacing: 3px;
+        }
+
+        .instructions {
+            background: rgba(139, 0, 0, 0.2);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .instructions h2 {
+            color: #ff6666;
+            font-size: 32px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .instructions p {
+            color: #ffcccc;
+            font-size: 20px;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .start-btn {
+            background: linear-gradient(145deg, #8b0000, #ff0000);
+            color: #fff;
+            font-size: 28px;
+            padding: 20px 50px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.5);
+            transition: all 0.3s;
+            margin-top: 30px;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(255, 0, 0, 0.8);
+        }
+
+        /* Game Screen */
+        .game-screen {
+            display: none;
+            max-width: 900px;
+            width: 100%;
+            background: rgba(20, 0, 0, 0.95);
+            padding: 40px;
+            border: 5px solid #8b0000;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(139, 0, 0, 0.8), inset 0 0 30px rgba(139, 0, 0, 0.3);
+        }
+
+        .timer {
+            text-align: center;
+            font-size: 48px;
+            color: #ff0000;
+            text-shadow: 0 0 20px #ff0000;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .question-image {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            margin: 0 auto 30px;
+            display: block;
+            border: 3px solid #8b0000;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(139, 0, 0, 0.6);
+        }
+
+        .question {
+            color: #ffcccc;
+            font-size: 26px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            background: linear-gradient(145deg, #4a0000, #8b0000);
+            color: #fff;
+            font-size: 22px;
+            padding: 20px;
+            border: 2px solid #8b0000;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: linear-gradient(145deg, #8b0000, #ff0000);
+            transform: translateX(10px);
+            box-shadow: 0 5px 20px rgba(255, 0, 0, 0.5);
+        }
+
+        .option-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .option-btn.correct {
+            background: linear-gradient(145deg, #004a00, #008b00);
+            border-color: #00ff00;
+        }
+
+        .option-btn.wrong {
+            background: linear-gradient(145deg, #2a0000, #4a0000);
+            border-color: #660000;
+        }
+
+        .penalty-timer {
+            text-align: center;
+            font-size: 32px;
+            color: #ff0000;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(139, 0, 0, 0.3);
+            border-radius: 10px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .hint {
+            background: rgba(139, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            color: #ffcc00;
+            font-size: 22px;
+            text-align: center;
+            border: 2px dashed #ffcc00;
+        }
+
+        /* Victory Screen */
+        .victory-screen {
+            display: none;
+            text-align: center;
+            max-width: 800px;
+            background: linear-gradient(145deg, rgba(0, 50, 0, 0.95), rgba(0, 100, 0, 0.95));
+            padding: 50px;
+            border: 5px solid #00ff00;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(0, 255, 0, 0.8), inset 0 0 30px rgba(0, 255, 0, 0.3);
+        }
+
+        .victory-screen h1 {
+            font-size: 72px;
+            color: #00ff00;
+            text-shadow: 0 0 30px #00ff00, 0 0 60px #00aa00;
+            margin-bottom: 40px;
+            animation: victoryGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes victoryGlow {
+            0%, 100% { text-shadow: 0 0 30px #00ff00, 0 0 60px #00aa00; }
+            50% { text-shadow: 0 0 50px #00ff00, 0 0 100px #00aa00; }
+        }
+
+        .victory-screen p {
+            font-size: 28px;
+            color: #ccffcc;
+            line-height: 1.8;
+            margin-top: 20px;
+        }
+
+        /* Riddle Screen */
+        .riddle-screen {
+            display: none;
+            text-align: center;
+            max-width: 800px;
+            background: rgba(40, 0, 40, 0.95);
+            padding: 50px;
+            border: 5px solid #8b008b;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(139, 0, 139, 0.8), inset 0 0 30px rgba(139, 0, 139, 0.3);
+        }
+
+        .riddle-screen h2 {
+            font-size: 40px;
+            color: #ff00ff;
+            text-shadow: 0 0 20px #ff00ff;
+            margin-bottom: 40px;
+        }
+
+        .riddle-screen p {
+            font-size: 32px;
+            color: #ffccff;
+            line-height: 2;
+            font-style: italic;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Effects -->
+    <img class="bg-image" id="bgImage" src="img1.jpg" alt="Background">
+    
+    <!-- Intro Screen -->
+    <div class="container">
+        <div class="intro-screen" id="introScreen">
+            <img src="img1.jpg" alt="The Hungry Island">
+            <h1>THE HUNGRY ISLAND</h1>
+            <div class="instructions">
+                <h2>⚠️ INSTRUCTIONS ⚠️</h2>
+                <p><strong>📖 Objective:</strong> Escape the cursed island by solving 7 deadly puzzles before time runs out.</p>
+                <p><strong>⏰ Time Limit:</strong> 10 minutes to complete all questions.</p>
+                <p><strong>📊 Total Questions:</strong> 7 questions stand between you and freedom.</p>
+                <p><strong>❌ Wrong Answer Penalty:</strong> Choose incorrectly and face a 60-second lockout. The tribe is hunting you...</p>
+                <p><strong>💡 Hints:</strong> Hints appear only after the penalty timer expires.</p>
+                <p><strong>✅ Progression:</strong> You must answer correctly to proceed to the next question.</p>
+                <p><strong>🎯 Strategy:</strong> Think carefully before you choose. Every second counts!</p>
+            </div>
+            <button class="start-btn" onclick="startGame()">ENTER THE ISLAND</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div class="game-screen" id="gameScreen">
+            <div class="timer" id="timer">10:00</div>
+            <img class="question-image" id="questionImage" src="" alt="Question Image">
+            <div class="question" id="question"></div>
+            <div class="options" id="options"></div>
+            <div class="penalty-timer hidden" id="penaltyTimer"></div>
+            <div class="hint hidden" id="hint"></div>
+        </div>
+
+        <!-- Victory Screen -->
+        <div class="victory-screen" id="victoryScreen">
+            <h1>🎉 YOU ESCAPED! 🎉</h1>
+            <p>You have survived the horrors of The Hungry Island!</p>
+            <p>Your courage and wit have saved you from the cannibals.</p>
+            <p style="margin-top: 40px; font-size: 24px;">Time Remaining: <span id="finalTime"></span></p>
+            <button class="start-btn" onclick="showRiddle()" style="margin-top: 30px;">CONTINUE</button>
+        </div>
+
+        <!-- Riddle Screen -->
+        <div class="riddle-screen" id="riddleScreen">
+            <h2>🔮 FINAL RIDDLE 🔮</h2>
+            <p>Sun-catchers guard my height,<br>
+            Two levels sleep beneath my sight.<br>
+            In the realm of code, where am I?</p>
+        </div>
+    </div>
+
+    <!-- Audio -->
+    <audio id="bgMusic" loop>
+        <source src="horror_music.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const questions = [
+            {
+                image: 'img2.jpg',
+                question: 'Q1.) You reach the island and see three paths. Only one is safe. A board says: "Choose the path that survivors take." Which path do you choose?',
+                options: ['A. Path with skeletons', 'B. Path with fresh footprints', 'C. Path with no footprints', 'D. Path with animal bones'],
+                correct: 1,
+                hint: 'Hint: Someone alive...'
+            },
+            {
+                image: 'img3.jpg',
+                question: 'Q2.) You find a locked door with a code. The clue says: "Hungry Island has 3 tribes. Each tribe eats every 2 days. After 6 days, how many meals?"',
+                options: ['A. 3', 'B. 6', 'C. 9', 'D. 12'],
+                correct: 2,
+                hint: 'Hint: Multiply smaller number...'
+            },
+            {
+                image: 'img4.jpg',
+                question: 'Q3.) A message says: "Only even-numbered rocks are safe. The sum of rock numbers is 26." Which pair is safe?',
+                options: ['A. 12 & 14', 'B. 10 & 4', 'C. 8 & 2', 'D. 7 & 5'],
+                correct: 0,
+                hint: 'Hint: Sum = Add'
+            },
+            {
+                image: 'img5.jpg',
+                question: 'Q4.) You find three idols: Idol of Teeth, Idol of Fire, Idol of Smoke. A prophecy says: "Choose the one that saves you from hungry peoples"',
+                options: ['A. Teeth', 'B. Fire', 'C. Smoke', 'D. All of them'],
+                correct: 1,
+                hint: 'Hint: One that burns anything...'
+            },
+            {
+                image: 'img6.jpg',
+                question: 'Q5.) A cannibal island trap has three possible triggers: A feather, a stone, and a bone. Clue says: "Pick the object they worship"',
+                options: ['A. Feather', 'B. Stone', 'C. Bone', 'D. None'],
+                correct: 2,
+                hint: 'Hint: Not a stone...'
+            },
+            {
+                image: 'img7.jpg',
+                question: 'Q6.) A cannibal chant echoes: "Two shadows walk, but only one is alive." You see two shadows approaching. What should you do?',
+                options: ['A. Run toward them', 'B. Light a fire', 'C. Hide behind rocks', 'D. Shout for help'],
+                correct: 2,
+                hint: 'Hint: Don\'t reveal yourself...'
+            },
+            {
+                image: 'img8.jpg',
+                question: 'Q7.) A stone puzzle says: "Cannibals fear what they cannot see, but smell what is near." Which tool helps you avoid them?',
+                options: ['A. Torch', 'B. Perfume', 'C. Mud', 'D. Sharp knife'],
+                correct: 2,
+                hint: 'Hint: They find perfume smell...'
+            }
+        ];
+
+        let currentQuestion = 0;
+        let gameTimer;
+        let timeLeft = 600;
+        let penaltyTimeout;
+        let isPenaltyActive = false;
+
+        function startGame() {
+            document.getElementById('introScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            document.getElementById('bgMusic').play();
+            startTimer();
+            loadQuestion();
+            createEffects();
+        }
+
+        function startTimer() {
+            gameTimer = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('timer').textContent = 
+                    `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(gameTimer);
+                    alert('Time\'s up! The cannibals caught you!');
+                    location.reload();
+                }
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                showVictory();
+                return;
+            }
+
+            const q = questions[currentQuestion];
+            document.getElementById('questionImage').src = q.image;
+            document.getElementById('bgImage').src = q.image;
+            document.getElementById('question').textContent = q.question;
+            document.getElementById('hint').classList.add('hidden');
+            document.getElementById('penaltyTimer').classList.add('hidden');
+            
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '';
+            
+            q.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option;
+                btn.onclick = () => checkAnswer(index);
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected) {
+            if (isPenaltyActive) return;
+
+            const q = questions[currentQuestion];
+            const buttons = document.querySelectorAll('.option-btn');
+            
+            if (selected === q.correct) {
+                buttons[selected].classList.add('correct');
+                setTimeout(() => {
+                    currentQuestion++;
+                    loadQuestion();
+                }, 1500);
+            } else {
+                buttons[selected].classList.add('wrong');
+                
+                // Show wrong choice message
+                const wrongMsg = document.createElement('div');
+                wrongMsg.className = 'penalty-timer';
+                wrongMsg.textContent = '❌ WRONG CHOICE! ❌';
+                wrongMsg.style.fontSize = '40px';
+                wrongMsg.style.marginTop = '20px';
+                document.getElementById('options').parentNode.insertBefore(wrongMsg, document.getElementById('penaltyTimer'));
+                
+                setTimeout(() => {
+                    wrongMsg.remove();
+                    startPenalty(q.hint);
+                }, 2000);
+            }
+        }
+
+        function startPenalty(hint) {
+            isPenaltyActive = true;
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.disabled = true);
+            
+            const penaltyDiv = document.getElementById('penaltyTimer');
+            penaltyDiv.classList.remove('hidden');
+            
+            let penaltyTime = 60;
+            penaltyDiv.textContent = `⚠️ The tribe is hunting you... Wait ${penaltyTime}s ⚠️`;
+            
+            const penaltyInterval = setInterval(() => {
+                penaltyTime--;
+                penaltyDiv.textContent = `⚠️ The tribe is hunting you... Wait ${penaltyTime}s ⚠️`;
+                
+                if (penaltyTime <= 0) {
+                    clearInterval(penaltyInterval);
+                    penaltyDiv.classList.add('hidden');
+                    
+                    const hintDiv = document.getElementById('hint');
+                    hintDiv.textContent = hint;
+                    hintDiv.classList.remove('hidden');
+                    
+                    buttons.forEach(btn => btn.disabled = false);
+                    isPenaltyActive = false;
+                }
+            }, 1000);
+        }
+
+        function showVictory() {
+            clearInterval(gameTimer);
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('victoryScreen').style.display = 'block';
+            
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('finalTime').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function showRiddle() {
+            document.getElementById('victoryScreen').style.display = 'none';
+            document.getElementById('riddleScreen').style.display = 'block';
+        }
+
+        function createEffects() {
+            // Create blood drips
+            for (let i = 0; i < 15; i++) {
+                const drip = document.createElement('div');
+                drip.className = 'blood-drip';
+                drip.style.left = Math.random() * 100 + '%';
+                drip.style.animationDelay = Math.random() * 3 + 's';
+                drip.style.animationDuration = (2 + Math.random() * 2) + 's';
+                document.body.appendChild(drip);
+            }
+
+            // Create falling skulls
+            for (let i = 0; i < 8; i++) {
+                const skull = document.createElement('div');
+                skull.className = 'skull';
+                skull.textContent = '💀';
+                skull.style.left = Math.random() * 100 + '%';
+                skull.style.animationDelay = Math.random() * 5 + 's';
+                skull.style.animationDuration = (5 + Math.random() * 5) + 's';
+                document.body.appendChild(skull);
+            }
+
+            // Create evil entities
+            const entities = ['☠️', '👹', '😈', '🦇'];
+            for (let i = 0; i < 4; i++) {
+                const entity = document.createElement('div');
+                entity.className = 'evil-entity';
+                entity.textContent = entities[i];
+                entity.style.left = Math.random() * 80 + '%';
+                entity.style.top = Math.random() * 80 + '%';
+                entity.style.animationDelay = Math.random() * 5 + 's';
+                entity.style.animationDuration = (8 + Math.random() * 4) + 's';
+                document.body.appendChild(entity);
+            }
+        }
+    </script>
+</body>
+</html>
